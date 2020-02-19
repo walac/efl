@@ -169,7 +169,15 @@ struct klass
        if(!as_generator(*(async_function_declaration)).generate(sink, cls.functions, iface_cxt))
          return false;
 
-       if(!as_generator(*(event_declaration)).generate(sink, cls.events, iface_cxt))
+       if (!as_generator(
+            "#if __MonoCS\n"
+            << *(event_declaration)
+            << "\n"
+            << "#else\n"
+            << *(event_definition(cls, cls))
+            << "\n"
+            << "#endif\n\n"
+          ).generate(sink, std::make_tuple(cls.events, cls.events), iface_cxt))
          return false;
 
        for (auto &&p : cls.parts)

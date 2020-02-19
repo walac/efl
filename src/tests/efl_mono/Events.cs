@@ -289,6 +289,44 @@ class TestInterfaceEvents
         Test.Assert(called);
         obj.Dispose();
     }
+
+#if ! __MonoCS
+    class PureCSharpClassWithEvent: Efl.Object, Dummy.ITestIface
+    {
+        public void EmitNonconflicted() {
+            NonconflictedEvent(this, new System.EventArgs());
+        }
+
+        public int CallMethodProtected(int x) {
+            return x + 1; // arbitrary
+        }
+
+        public int IfaceProp {
+            get;
+            set;
+        }
+        public int PublicGetterPrivateSetter {
+            get;
+        }
+
+        public event EventHandler NonconflictedEvent;
+    }
+
+    public static void test_pure_csharp_inherit_events()
+    {
+        var obj = new PureCSharpClassWithEvent();
+        var called = false;
+
+        EventHandler cb = (object sender, EventArgs e) => {
+            called = true;
+        };
+
+        obj.NonconflictedEvent += cb;
+        obj.EmitNonconflicted();
+        Test.Assert(called);
+        obj.Dispose();
+    }
+#endif
 }
 
 class TestEventNaming

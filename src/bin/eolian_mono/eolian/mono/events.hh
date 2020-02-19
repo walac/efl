@@ -30,6 +30,20 @@ namespace eolian_mono {
 
 namespace eina = efl::eina;
 
+using class_type = efl::eolian::grammar::attributes::class_type;
+
+namespace details {
+
+const static auto cast_if_interface = 
+   (attribute_conditional(
+    [] (class_type const& type) -> bool {
+        return type == class_type::interface_ || type == class_type::mixin;
+    })
+    << "((Efl.Eo.EoWrapper)this)."
+   ) | efl::eolian::grammar::eps;
+
+}
+
 template<typename OutputIterator, typename Context>
 struct unpack_event_args_visitor
 {
@@ -155,7 +169,11 @@ struct pack_event_info_and_call_visitor
    Context const* context;
    attributes::type_def const& type;
    std::string library_name;
-   std::string evt_c_name;
+   attributes::event_def const& evt;
+
+   std::string evt_c_name() const {
+       return utils::to_uppercase(evt.c_name);
+   }
 
    typedef pack_event_info_and_call_visitor<OutputIterator, Context> visitor_type;
    typedef bool result_type;
@@ -171,8 +189,8 @@ struct pack_event_info_and_call_visitor
            return as_generator(
                 indent.inc() << "Contract.Requires(e != null, nameof(e));\n"
                 << indent.inc() << "IntPtr info = Marshal.AllocHGlobal(Marshal.SizeOf(e.Arg));\n"
-                << indent.inc() << "CallNativeEventCallback(" + library_name + ", \"_" + evt_c_name + "\", info, " << "(p) => Marshal.FreeHGlobal(p));\n"
-              ).generate(sink, attributes::unused, *context);
+                << indent.inc() << details::cast_if_interface << "CallNativeEventCallback(" + library_name + ", \"_" + evt_c_name() + "\", info, " << "(p) => Marshal.FreeHGlobal(p));\n"
+              ).generate(sink, evt.klass.type, *context);
         }
 
       using attributes::regular_type_def;
@@ -199,8 +217,8 @@ struct pack_event_info_and_call_visitor
            return as_generator(
              indent.inc() << "Contract.Requires(e != null, nameof(e));\n"
              << indent.inc() << "IntPtr info = Eina.StringConversion.ManagedStringToNativeUtf8Alloc(" << conversion << ");\n"
-             << indent.inc() << "CallNativeEventCallback(" + library_name + ", \"_" + evt_c_name + "\", info, " << "(p) => Eina.MemoryNative.Free(p));\n"
-             ).generate(sink, attributes::unused, *context);
+             << indent.inc() << details::cast_if_interface << "CallNativeEventCallback(" + library_name + ", \"_" + evt_c_name() + "\", info, " << "(p) => Eina.MemoryNative.Free(p));\n"
+             ).generate(sink, evt.klass.type, *context);
         };
 
       if (eina::optional<bool> b = type_match::get_match(str_table, filter_func, str_accept_func))
@@ -218,8 +236,8 @@ struct pack_event_info_and_call_visitor
            return as_generator(
              indent.inc() << "Contract.Requires(e != null, nameof(e));\n"
              << indent.inc() << "IntPtr info = Eina.PrimitiveConversion.ManagedToPointerAlloc(" << conversion << ");\n"
-             << indent.inc() << "CallNativeEventCallback(" + library_name + ", \"_" + evt_c_name + "\", info, " << "(p) => Marshal.FreeHGlobal(p));\n"
-             ).generate(sink, attributes::unused, *context);
+             << indent.inc() << details::cast_if_interface << "CallNativeEventCallback(" + library_name + ", \"_" + evt_c_name() + "\", info, " << "(p) => Marshal.FreeHGlobal(p));\n"
+             ).generate(sink, evt.klass.type, *context);
         };
 
       if (eina::optional<bool> b = type_match::get_match(value_table, filter_func, value_accept_func))
@@ -230,12 +248,14 @@ struct pack_event_info_and_call_visitor
    bool operator()(grammar::attributes::klass_name const&) const
    {
       auto const& indent = current_indentation(*context);
+
       return as_generator(
                           indent.inc() << "Contract.Requires(e != null, nameof(e));\n"
                           << indent.inc() << "IntPtr info = e.Arg.NativeHandle;\n"
-                          << indent.inc() << "CallNativeEventCallback(" << library_name << ", \"_" << evt_c_name << "\", info, null);\n"
-                          ).generate(sink, attributes::unused, *context);
+                          << indent.inc() << details::cast_if_interface << "CallNativeEventCallback(" << library_name << ", \"_" << evt_c_name() << "\", info, null);\n"
+                          ).generate(sink, evt.klass.type, *context);
    }
+
    bool operator()(attributes::complex_type_def const& type) const
    {
       auto const& indent = current_indentation(*context);
@@ -254,8 +274,8 @@ struct pack_event_info_and_call_visitor
         info_variable = "IntPtr info = e.Arg.Handle;\n";
       return as_generator(indent.inc() << "Contract.Requires(e != null, nameof(e));\n"
                           << indent.inc() << info_variable
-                          << indent.inc() << "CallNativeEventCallback(" << library_name << ", \"_" << evt_c_name << "\", info, null);\n"
-                          ).generate(sink, attributes::unused, *context);
+                          << indent.inc() << details::cast_if_interface << "CallNativeEventCallback(" << library_name << ", \"_" << evt_c_name() << "\", info, null);\n"
+                          ).generate(sink, evt.klass.type, *context);
    }
 };
 
@@ -345,23 +365,28 @@ struct event_declaration_generator
    template<typename OutputIterator, typename Context>
    bool generate(OutputIterator sink, attributes::event_def const& evt, Context const& context) const
    {
-      std::string wrapper_args_type;
-      std::string evt_name = name_helpers::managed_event_name(evt.name);
+      auto wrapper_args_type = std::string{""};
+      auto evt_name = name_helpers::managed_event_name(evt.name);
+      auto event_args_name = name_helpers::managed_event_args_name(evt);
 
       if (blacklist::is_event_blacklisted(evt, context))
         return true;
 
       if (evt.type.is_engaged())
-        wrapper_args_type = "<" + name_helpers::managed_event_args_name(evt) + ">";
+        wrapper_args_type = "<" + event_args_name + ">";
 
       if (!as_generator(documentation(2))
                         .generate(sink, evt, context)) return false;
+
       if (evt.type.is_engaged())
         if (!as_generator(
-                scope_tab(2) << "/// <value><see cref=\"" << name_helpers::managed_event_args_name(evt) << "\"/></value>\n"
+                scope_tab(2) << "/// <value><see cref=\"" << event_args_name << "\"/></value>\n"
              ).generate(sink, evt, context)) return false;
+
+      auto event_decl = "public event EventHandler" + wrapper_args_type + " " + evt_name;
+
       if (!as_generator(
-              scope_tab(2) << "event EventHandler" << wrapper_args_type << " " << evt_name << ";\n"
+              scope_tab(2) << event_decl << ";\n"
            ).generate(sink, evt, context))
         return false;
 
@@ -411,8 +436,8 @@ struct event_definition_generator
       if (!etype.is_engaged())
         {
            auto event_call_site_sink = std::back_inserter(event_native_call);
-           if (!as_generator(indent.inc().inc().inc() << "CallNativeEventCallback(" << library_name << ", \"_" << utils::to_uppercase(evt.c_name) << "\", IntPtr.Zero, null);\n")
-                 .generate(event_call_site_sink, attributes::unused, context))
+           if (!as_generator(indent.inc().inc().inc() << details::cast_if_interface << "CallNativeEventCallback(" << library_name << ", \"_" << utils::to_uppercase(evt.c_name) << "\", IntPtr.Zero, null);\n")
+                 .generate(event_call_site_sink, evt.klass.type, context))
              return false;
         }
       else
@@ -432,7 +457,13 @@ struct event_definition_generator
            if (!(*etype).original_type.visit(unpack_event_args_visitor<decltype(arg_initializer_sink), decltype(sub_context)>{arg_initializer_sink, &sub_context, *etype}))
              return false;
 
-           if (!(*etype).original_type.visit(pack_event_info_and_call_visitor<decltype(event_call_site_sink), decltype(sub_context)>{event_call_site_sink, &sub_context, *etype, library_name, utils::to_uppercase(evt.c_name)}))
+           if (!(*etype).original_type.visit(
+                    pack_event_info_and_call_visitor<decltype(event_call_site_sink), decltype(sub_context)>{
+                        event_call_site_sink
+                        , &sub_context
+                        , *etype
+                        , library_name
+                        , evt}))
              return false;
 
            arg_initializer += " }";
@@ -555,22 +586,22 @@ struct event_definition_generator
       auto unit = (const Eolian_Unit*) context_find_tag<eolian_state_context>(context).state;
       attributes::klass_def klass(get_klass(evt.klass, unit), unit);
       auto library_name = context_find_tag<library_context>(context).actual_library_name(klass.filename);
+
       return as_generator(
            scope_tab(2) << "{\n"
            << scope_tab(2) << scope_tab << "add\n"
-           << scope_tab(2) << scope_tab << "{\n"//evt.type.is_engaged()
-           << scope_tab(2) << scope_tab << scope_tab << "Efl.EventCb callerCb = GetInternalEventCallback(value"
-           << (evt.type.is_engaged() ? event_args : "") << ");\n"
+           << scope_tab(2) << scope_tab << "{\n"
+           << scope_tab(2) << scope_tab << scope_tab << "Efl.EventCb callerCb = " << details::cast_if_interface << "GetInternalEventCallback(value" << (evt.type.is_engaged() ? event_args : "") << ");\n"
            << scope_tab(2) << scope_tab << scope_tab << "string key = \"_" << upper_c_name << "\";\n"
-           << scope_tab(2) << scope_tab << scope_tab << "AddNativeEventHandler(" << library_name << ", key, callerCb, value);\n"
+           << scope_tab(2) << scope_tab << scope_tab << details::cast_if_interface << "AddNativeEventHandler(" << library_name << ", key, callerCb, value);\n"
            << scope_tab(2) << scope_tab << "}\n\n"
            << scope_tab(2) << scope_tab << "remove\n"
            << scope_tab(2) << scope_tab << "{\n"
            << scope_tab(2) << scope_tab << scope_tab << "string key = \"_" << upper_c_name << "\";\n"
-           << scope_tab(2) << scope_tab << scope_tab << "RemoveNativeEventHandler(" << library_name << ", key, value);\n"
+           << scope_tab(2) << scope_tab << scope_tab << details::cast_if_interface << "RemoveNativeEventHandler(" << library_name << ", key, value);\n"
            << scope_tab(2) << scope_tab << "}\n"
            << scope_tab(2) << "}\n\n"
-           ).generate(sink, attributes::unused, context);
+           ).generate(sink, std::make_tuple(evt.klass.type, evt.klass.type, evt.klass.type), context);
    }
 };
 
