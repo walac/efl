@@ -130,7 +130,8 @@ _efl_test_option_disp(int argc, char **argv, const Efl_Test_Case *etc)
           }
         else if (strcmp(argv[i], "--valgrind") == 0)
           {
-             const char *nav[argc + 3];
+             //const char *nav[argc + 3];
+              char *nav = malloc(sizeof(char)*(argc + 3));
              int j, k;
 
              nav[0] = "valgrind";
@@ -142,7 +143,7 @@ _efl_test_option_disp(int argc, char **argv, const Efl_Test_Case *etc)
                }
 
              nav[k] = NULL;
-             execvp("valgrind", (char**) nav);
+             execvp("valgrind", (const char* const *) nav);
              fprintf(stderr, "Failed to execute valgrind due to '%s'\n", strerror(errno));
              return 0;
           }

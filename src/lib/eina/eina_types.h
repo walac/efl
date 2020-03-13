@@ -42,8 +42,8 @@
 #  else
 #   define EAPI
 #  endif
-# else
-#  define EAPI __declspec(dllimport)
+//# else
+//#  define EAPI __declspec(dllimport)
 # endif
 # define EAPI_WEAK
 #else

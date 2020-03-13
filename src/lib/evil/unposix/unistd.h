@@ -4,6 +4,7 @@
 #include "unimplemented.h"
 
 #include <evil_unistd.h>
+#include <process.h>
 
 #define F_OK 0
 #define W_OK 2

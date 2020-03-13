@@ -22,62 +22,6 @@
 #include <check.h>
 #include "../efl_check.h"
 
-void eina_test_ustringshare(TCase *tc);
-void eina_test_binshare(TCase *tc);
-void eina_test_inarray(TCase *tc);
-void eina_test_array(TCase *tc);
-void eina_test_log(TCase *tc);
-void eina_test_error(TCase *tc);
-void eina_test_magic(TCase *tc);
-void eina_test_inlist(TCase *tc);
-void eina_test_clist(TCase *tc);
-void eina_test_lalloc(TCase *tc);
-void eina_test_main(TCase *tc);
-void eina_test_counter(TCase *tc);
-void eina_test_hash(TCase *tc);
-void eina_test_list(TCase *tc);
-void eina_test_iterator(TCase *tc);
-void eina_test_accessor(TCase *tc);
-void eina_test_module(TCase *tc);
-void eina_test_convert(TCase *tc);
-void eina_test_rbtree(TCase *tc);
-void eina_test_file(TCase *tc);
-void eina_test_benchmark(TCase *tc);
-void eina_test_mempool(TCase *tc);
-void eina_test_rectangle(TCase *tc);
-void eina_test_range(TCase *tc);
-void eina_test_matrixsparse(TCase *tc);
-void eina_test_tiler(TCase *tc);
-void eina_test_strbuf(TCase *tc);
-void eina_test_binbuf(TCase *tc);
-void eina_test_str(TCase *tc);
-void eina_test_ustr(TCase *tc);
-void eina_test_quadtree(TCase *tc);
-void eina_test_fp(TCase *tc);
-void eina_test_sched(TCase *tc);
-void eina_test_simple_xml_parser(TCase *tc);
-void eina_test_value(TCase *tc);
-void eina_test_model(TCase *tc);
-void eina_test_cow(TCase *tc);
-void eina_test_barrier(TCase *tc);
-void eina_test_tmpstr(TCase *tc);
-void eina_test_locking(TCase *tc);
-void eina_test_abi(TCase *tc);
-void eina_test_trash(TCase *tc);
-void eina_test_xattr(TCase *tc);
-void eina_test_crc(TCase *tc);
-void eina_test_quad(TCase *tc);
-void eina_test_matrix(TCase *tc);
-void eina_test_quaternion(TCase *tc);
-void eina_test_vector(TCase *tc);
-void eina_test_promise(TCase *tc);
-void eina_test_bezier(TCase *tc);
-void eina_test_safepointer(TCase *tc);
-void eina_test_slice(TCase *tc);
-void eina_test_freeq(TCase *tc);
-void eina_test_slstr(TCase *tc);
-void eina_test_vpath(TCase *tc);
-void eina_test_debug(TCase *tc);
-void eina_test_abstract_content(TCase *tc);
+void eina_test_win32_synchronization(TCase *tc);
 
 #endif /* EINA_SUITE_H_ */
