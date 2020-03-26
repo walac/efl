@@ -25,3 +25,7 @@
 #endif
 
 #endif
+
+#include <corecrt.h>
+#include <sys/types.h>
+#include_next <sys/stat.h>
