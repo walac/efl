@@ -1,4 +1,4 @@
-project('efl', ['c','cpp'],
+project('efl', ['c', 'cpp'],
   version: '1.24.0',
   default_options : ['buildtype=release', 'cpp_std=c++11'],
   meson_version : '>=0.47'
@@ -18,7 +18,7 @@ version_arr = meson.project_version().split('.')
 version_major = version_arr[0]
 version_minor = version_arr[1]
 version_micro = version_arr[2]
-version_name = 'v-'+version_major + '.' + version_minor
+version_name = 'v-' + version_major + '.' + version_minor
 
 cc = meson.get_compiler('c')
 host_os = host_machine.system()
@@ -33,14 +33,14 @@ if host_os == 'linux'
   endif
 endif
 
-#prepare a special linker args flag for binaries on macos
+# prepare a special linker args flag for binaries on macos
 bin_linker_args = []
 if host_machine.system() == 'darwin'
   bin_linker_args = ['-pagezero_size', '10000', '-image_base', '100000000']
 endif
 
 windows = ['windows', 'cygwin']
-#bsd for meson 0.46 and 0.47
+# bsd for meson 0.46 and 0.47
 bsd = ['bsd', 'freebsd', 'dragonfly', 'netbsd', 'openbsd']
 linux = ['linux']
 osx = ['darwin']
@@ -53,7 +53,7 @@ sys_osx = osx.contains(host_machine.system())
 module_files = []
 evas_loader_map = []
 
-#install paths
+# install paths
 dir_prefix    = get_option('prefix')
 dir_sysconf   = join_paths(dir_prefix, get_option('sysconfdir'))
 dir_bin       = join_paths(dir_prefix, get_option('bindir'))
@@ -61,7 +61,7 @@ dir_data      = join_paths(dir_prefix, get_option('datadir'))
 dir_include   = join_paths(dir_prefix, get_option('includedir'))
 dir_lib       = join_paths(dir_prefix, get_option('libdir'))
 
-#local paths
+# local paths
 local_lib = join_paths('src', 'lib')
 local_bindings = join_paths('src', 'bindings')
 local_bin = join_paths('src', 'bin')
@@ -78,10 +78,10 @@ dev_cflags_try = [
   '-Wunused-parameter',
   '-Wsign-compare',
   '-Wno-missing-field-initializers',
-]
+  ]
 
 foreach cf: dev_cflags_try
-  if cc.has_argument(cf) == true
+  if cc.has_argument(cf)
     dev_cflags += cf
   endif
 endforeach
@@ -96,7 +96,7 @@ foreach lang : ['c', 'objc', 'cpp']
   add_global_arguments('-DNEED_RUN_IN_TREE=1', language: lang)
   add_global_arguments('-DEFL_BUILD=1', language: lang)
   add_global_arguments('-DELM_INTERNAL_API_ARGESFSDFEFC=1', language: lang)
-  if sys_windows == true
+  if sys_windows
     add_global_arguments('-D_POSIX_C_SOURCE=200809L', language: lang)
     if (get_option('windows-version') == 'vista')
       add_global_arguments('-DWINVER=0x060', language: lang)
@@ -149,14 +149,14 @@ extern char **environ;
 
 void func(void) { printf("%p\n", environ); }
 '''
-if cc.compiles(code, args : '-lc', name : 'environ check') == true
+if cc.compiles(code, args : '-lc', name : 'environ check')
   config_h.set10('HAVE_ENVIRON', true)
 endif
 
 cpu_sse3 = false
 cpu_neon = false
 cpu_neon_intrinsics = false
-native_arch_opt_c_args = [ ]
+native_arch_opt_c_args = []
 
 if host_machine.endian() == 'big'
   config_h.set10('WORDS_BIGENDIAN', true)
@@ -194,26 +194,26 @@ endif
 config_dir = [include_directories('.')]
 eolian_include_directories = []
 
-if sys_linux == true or sys_bsd == true
+if sys_linux or sys_bsd
   sys_lib_extension = 'so'
   sys_exe_extension = ''
   sys_mod_extension = 'so'
-elif sys_windows == true
+elif sys_windows
   sys_lib_extension = 'dll'
   sys_exe_extension = 'exe'
   sys_mod_extension = 'dll'
-elif sys_osx == true
+elif sys_osx
   sys_lib_extension = 'dylib'
   sys_exe_extension = ''
   sys_mod_extension = 'dylib'
   config_h.set('environ', '(*_NSGetEnviron())')
 else
-  error('System '+host_machine.system()+' not known')
+  error('System ' + host_machine.system()+' not known')
 endif
 
 if host_os == 'freebsd' or host_os == 'dragonfly'
-# This is necessary. We MUST use OpenSSL in base as bringing in
-# from ports can cause major issues (2 copies of the same library).
+  # This is necessary. We MUST use OpenSSL in base as bringing in from ports
+  # can cause major issues (2 copies of the same library).
   crypto = declare_dependency(link_args : [ '-lssl', '-lcrypto'])
   config_h.set('HAVE_OPENSSL', '1')
 elif (get_option('crypto') == 'gnutls')
@@ -230,23 +230,23 @@ if get_option('crypto') != ''
   config_h.set('HAVE_SIGNATURE', '1')
 endif
 
-config_h.set_quoted('SHARED_LIB_SUFFIX', '.'+sys_lib_extension)
-config_h.set_quoted('MOD_SUFFIX', '.'+sys_mod_extension)
+config_h.set_quoted('SHARED_LIB_SUFFIX', '.' + sys_lib_extension)
+config_h.set_quoted('MOD_SUFFIX', '.' + sys_mod_extension)
 if sys_exe_extension == ''
   config_h.set_quoted('EXE_SUFFIX', '')
 else
-  config_h.set_quoted('EXE_SUFFIX', '.'+sys_exe_extension)
+  config_h.set_quoted('EXE_SUFFIX', '.' + sys_exe_extension)
 endif
 config_h.set('EFL_BUILD', '1')
 
-if get_option('tslib') == true
+if get_option('tslib')
   config_h.set('HAVE_TSLIB', '1')
 endif
 
 subdir('header_checks')
 subdir('po')
 
-if get_option('wl') == true
+if get_option('wl')
   subdir(join_paths('src', 'wayland_protocol'))
 endif
 
@@ -255,14 +255,14 @@ ecore_evas_wayland_engine_include_dir = []
 evas_static_list = []
 
 luaold_interpreters = [
-  ['lua',     ['>=5.1.0','<5.3.0']],
-  ['lua51',   ['>=5.1.0','<5.2.0']],
-  ['lua-5.1', ['>=5.1.0','<5.2.0']],
-  ['lua5.1',  ['>=5.1.0','<5.2.0']],
-  ['lua52',   ['>=5.2.0','<5.3.0']],
-  ['lua-5.2', ['>=5.2.0','<5.3.0']],
-  ['lua5.2',  ['>=5.2.0','<5.3.0']],
-]
+  ['lua',     ['>=5.1.0', '<5.3.0']],
+  ['lua51',   ['>=5.1.0', '<5.2.0']],
+  ['lua-5.1', ['>=5.1.0', '<5.2.0']],
+  ['lua5.1',  ['>=5.1.0', '<5.2.0']],
+  ['lua52',   ['>=5.2.0', '<5.3.0']],
+  ['lua-5.2', ['>=5.2.0', '<5.3.0']],
+  ['lua5.2',  ['>=5.2.0', '<5.3.0']],
+  ]
 
 lua_pc_name = ''
 
@@ -270,7 +270,7 @@ if get_option('lua-interpreter') == 'lua'
   foreach l : luaold_interpreters
     lua = dependency(l[0], version: l[1], required:false)
     lua_pc_name = l[0]
-    if lua.found() == true
+    if lua.found()
       break
     endif
   endforeach
@@ -279,74 +279,79 @@ else
   lua_pc_name = 'luajit'
 endif
 
-if sys_osx == true and get_option('lua-interpreter') == 'luajit'
-# luajit on macro is broken, this means we need to generate our own dependency with our arguments, a library later still needs to link to luajit for the pagesize argument thingy
+if sys_osx and get_option('lua-interpreter') == 'luajit'
+  # luajit on macro is broken, this means we need to generate our own
+  # dependency with our arguments, a library later still needs to link to
+  # luajit for the pagesize argument thingy
   lua = declare_dependency(
     include_directories: include_directories(lua.get_pkgconfig_variable('includedir')),
-    link_args: ['-L'+lua.get_pkgconfig_variable('libdir'), '-l'+lua.get_pkgconfig_variable('libname')]
-  )
+    link_args: [
+      '-L' + lua.get_pkgconfig_variable('libdir'),
+      '-l' + lua.get_pkgconfig_variable('libname')
+      ]
+    )
 endif
 
 subprojects = [
-# name              |   option              | mod  | lib  | bin  | bench | tests | examples | pkg-config options | name of static libs
-['evil'             ,[]                    , false,  true, false, false, false, false, [], []],
-['eina'             ,[]                    , false,  true,  true,  true,  true,  true, [], []],
-['eolian'           ,[]                    , false,  true,  true, false,  true, false, ['eina'], []],
-['eo'               ,[]                    , false,  true, false,  true,  true, false, ['eina'], []],
-['efl'              ,[]                    , false,  true, false, false,  true, false, ['eo'], []],
-['emile'            ,[]                    , false,  true, false, false,  true,  true, ['eina', 'efl'], ['lz4', 'rg_etc']],
-['eet'              ,[]                    , false,  true,  true, false,  true,  true, ['eina', 'emile', 'efl'], []],
-['ecore'            ,[]                    , false,  true, false, false, false, false, ['eina', 'eo', 'efl'], ['buildsystem']],
-['eldbus'           ,[]                    , false,  true,  true, false,  true,  true, ['eina', 'eo', 'efl'], []],
-['ecore'            ,[]                    ,  true, false, false, false,  true,  true, ['eina', 'eo', 'efl'], []], #ecores modules depend on eldbus
-['ecore_audio'      ,['audio']             , false,  true, false, false, false, false, ['eina', 'eo'], []],
-['ecore_avahi'      ,['avahi']             , false,  true, false, false, false,  true, ['eina', 'ecore'], []],
-['ecore_con'        ,[]                    , false,  true,  true, false,  true, false, ['eina', 'eo', 'efl', 'ecore'], ['http-parser']],
-['ecore_file'       ,[]                    , false,  true, false, false, false, false, ['eina'], []],
-['eeze'             ,['eeze']              ,  true,  true,  true, false,  true, false, ['eina', 'efl'], []],
-['ecore_input'      ,[]                    , false,  true, false, false, false, false, ['eina', 'eo'], []],
-['ecore_x'          ,['x11']               , false,  true, false, false, false, false, ['eina', 'efl'], []],
-['ecore_fb'         ,['fb']                , false,  true, false, false, false, false, ['eina'], []],
-['ecore_wl2'        ,['wl']                ,  true,  true, false, false, true, false, ['eina'], ['libdrm']],
-['ecore_sdl'        ,['sdl']               , false,  true, false, false, false, false, ['eina'], []],
-['ecore_win32'      ,[]                    , false,  true, false, false, false, false, ['eina'], []],
-['ecore_ipc'        ,[]                    , false,  true, false, false, false, false, ['eina'], []],
-['ecore_buffer'     ,['buffer']            ,  true,  true,  true, false, false, false, ['eina'], []],
-['ector'            ,[]                    , false,  true, false, false,  true, false, ['eina', 'efl'], ['draw', 'triangulator', 'freetype']],
-['elput'            ,['drm']               , false,  true, false, false,  true, false, ['eina', 'eldbus'], []],
-['ecore_drm2'       ,['drm']               , false,  true, false, false, false, false, ['ecore'], ['libdrm']],
-['ecore_cocoa'      ,['cocoa']             , false,  true, false, false, false, false, ['eina'], []],
-['evas'             ,[]                    ,  true,  true, false, false,  true,  true, ['eina', 'efl', 'eo'], ['vg_common', 'libunibreak']],
-['ecore_input_evas' ,[]                    , false,  true, false, false, false, false, ['eina', 'evas'], []],
-['ecore_evas'       ,[]                    ,  true,  true,  true, false, false, false, ['evas', 'ector'], []],
-['ecore_imf'        ,[]                    ,  true,  true, false, false, false, false, ['eina'], []],
-['embryo'           ,[]                    , false,  true,  true, false, false, false, ['eina', 'efl', 'eo'], []],
-['efreet'           ,[]                    , false,  true, false, false,  true, false, ['eina', 'efl', 'eo'], []],
-['eio'              ,[]                    , false,  true, false, false,  true,  true, ['eina', 'eet'], []],
-['efreet'           ,[]                    , false, false,  true, false, false, false, ['eina', 'efl', 'eo'], []],
-['ecore_imf_evas'   ,[]                    , false,  true, false, false, false, false, ['eina', 'efl', 'eo'], []],
-['ephysics'         ,['physics']           , false,  true, false, false, false, false, ['eina', 'efl', 'eo'], []],
-['edje'             ,[]                    , false,  true,  true, false,  true,  true, ['evas', 'eo', 'efl', lua_pc_name], []],
-['emotion'          ,[]                    ,  true,  true, false, false,  true,  true, ['eina', 'efl', 'eo'], []],
-['ethumb'           ,[]                    ,  true,  true,  true, false, false, false, ['eina', 'efl', 'eo'], []],
-['ethumb_client'    ,[]                    , false,  true,  true, false, false,  true, ['eina', 'efl', 'eo', 'ethumb'], []],
-['elementary'       ,[]                    ,  true,  true,  true,  true,  true,  true, ['eina', 'efl', 'eo', 'eet', 'evas', 'ecore', 'ecore-evas', 'ecore-file', 'ecore-input', 'edje', 'ethumb-client', 'emotion', 'ecore-imf', 'ecore-con', 'eldbus', 'efreet', 'efreet-mime', 'efreet-trash', 'eio'], ['atspi']],
-['efl_canvas_wl'    ,['wl']                , false,  true,  true, false, false, false, ['eina', 'efl', 'eo', 'evas', 'ecore'], []],
-['elua'             ,['elua']              , false,  true,  true, false,  true, false, ['eina', 'luajit'], []],
-['ecore_wayland'    ,['wl-deprecated']     , false,  true, false, false, false, false, ['eina'], []],
-['ecore_drm'        ,['drm-deprecated']    , false,  true, false, false, false, false, ['eina'], []],
-['exactness'        ,[]                    , false,  false,  true, false, false, false, ['eina, evas, eet'], []],
-]
+  # name              |   option              | mod  | lib  | bin  | bench | tests | examples | pkg-config options | name of static libs
+  ['evil'             , []                    , false,  true, false,  false,  false,     false, [], []],
+  ['eina'             , []                    , false,  true,  true,   true,   true,      true, [], []],
+  ['eolian'           , []                    , false,  true,  true,  false,   true,     false, ['eina'], []],
+  ['eo'               , []                    , false,  true, false,   true,   true,     false, ['eina'], []],
+  ['efl'              , []                    , false,  true, false,  false,   true,     false, ['eo'], []],
+  ['emile'            , []                    , false,  true, false,  false,   true,      true, ['eina', 'efl'], ['lz4', 'rg_etc']],
+  ['eet'              , []                    , false,  true,  true,  false,   true,      true, ['eina', 'emile', 'efl'], []],
+  ['ecore'            , []                    , false,  true, false,  false,  false,     false, ['eina', 'eo', 'efl'], ['buildsystem']],
+  ['eldbus'           , []                    , false,  true,  true,  false,   true,      true, ['eina', 'eo', 'efl'], []],
+  ['ecore'            , []                    ,  true, false, false,  false,   true,      true, ['eina', 'eo', 'efl'], []], # ecores modules depend on eldbus
+  ['ecore_audio'      , ['audio']             , false,  true, false,  false,  false,     false, ['eina', 'eo'], []],
+  ['ecore_avahi'      , ['avahi']             , false,  true, false,  false,  false,      true, ['eina', 'ecore'], []],
+  ['ecore_con'        , []                    , false,  true,  true,  false,   true,     false, ['eina', 'eo', 'efl', 'ecore'], ['http-parser']],
+  ['ecore_file'       , []                    , false,  true, false,  false,  false,     false, ['eina'], []],
+  ['eeze'             , ['eeze']              ,  true,  true,  true,  false,   true,     false, ['eina', 'efl'], []],
+  ['ecore_input'      , []                    , false,  true, false,  false,  false,     false, ['eina', 'eo'], []],
+  ['ecore_x'          , ['x11']               , false,  true, false,  false,  false,     false, ['eina', 'efl'], []],
+  ['ecore_fb'         , ['fb']                , false,  true, false,  false,  false,     false, ['eina'], []],
+  ['ecore_wl2'        , ['wl']                ,  true,  true, false,  false,  true,      false, ['eina'], ['libdrm']],
+  ['ecore_sdl'        , ['sdl']               , false,  true, false,  false,  false,     false, ['eina'], []],
+  ['ecore_win32'      , []                    , false,  true, false,  false,  false,     false, ['eina'], []],
+  ['ecore_ipc'        , []                    , false,  true, false,  false,  false,     false, ['eina'], []],
+  ['ecore_buffer'     , ['buffer']            ,  true,  true,  true,  false,  false,     false, ['eina'], []],
+  ['ector'            , []                    , false,  true, false,  false,   true,     false, ['eina', 'efl'], ['draw', 'triangulator', 'freetype']],
+  ['elput'            , ['drm']               , false,  true, false,  false,   true,     false, ['eina', 'eldbus'], []],
+  ['ecore_drm2'       , ['drm']               , false,  true, false,  false,  false,     false, ['ecore'], ['libdrm']],
+  ['ecore_cocoa'      , ['cocoa']             , false,  true, false,  false,  false,     false, ['eina'], []],
+  ['evas'             , []                    ,  true,  true, false,  false,   true,      true, ['eina', 'efl', 'eo'], ['vg_common', 'libunibreak']],
+  ['ecore_input_evas' , []                    , false,  true, false,  false,  false,     false, ['eina', 'evas'], []],
+  ['ecore_evas'       , []                    ,  true,  true,  true,  false,  false,     false, ['evas', 'ector'], []],
+  ['ecore_imf'        , []                    ,  true,  true, false,  false,  false,     false, ['eina'], []],
+  ['embryo'           , []                    , false,  true,  true,  false,  false,     false, ['eina', 'efl', 'eo'], []],
+  ['efreet'           , []                    , false,  true, false,  false,   true,     false, ['eina', 'efl', 'eo'], []],
+  ['eio'              , []                    , false,  true, false,  false,   true,      true, ['eina', 'eet'], []],
+  ['efreet'           , []                    , false, false,  true,  false,  false,     false, ['eina', 'efl', 'eo'], []],
+  ['ecore_imf_evas'   , []                    , false,  true, false,  false,  false,     false, ['eina', 'efl', 'eo'], []],
+  ['ephysics'         , ['physics']           , false,  true, false,  false,  false,     false, ['eina', 'efl', 'eo'], []],
+  ['edje'             , []                    , false,  true,  true,  false,   true,      true, ['evas', 'eo', 'efl', lua_pc_name], []],
+  ['emotion'          , []                    ,  true,  true, false,  false,   true,      true, ['eina', 'efl', 'eo'], []],
+  ['ethumb'           , []                    ,  true,  true,  true,  false,  false,     false, ['eina', 'efl', 'eo'], []],
+  ['ethumb_client'    , []                    , false,  true,  true,  false,  false,      true, ['eina', 'efl', 'eo', 'ethumb'], []],
+  ['elementary'       , []                    ,  true,  true,  true,   true,   true,      true, ['eina', 'efl', 'eo', 'eet', 'evas', 'ecore', 'ecore-evas', 'ecore-file', 'ecore-input', 'edje', 'ethumb-client', 'emotion', 'ecore-imf', 'ecore-con', 'eldbus', 'efreet', 'efreet-mime', 'efreet-trash', 'eio'], ['atspi']],
+  ['efl_canvas_wl'    , ['wl']                , false,  true,  true,  false,  false,     false, ['eina', 'efl', 'eo', 'evas', 'ecore'], []],
+  ['elua'             , ['elua']              , false,  true,  true,  false,   true,     false, ['eina', 'luajit'], []],
+  ['ecore_wayland'    , ['wl-deprecated']     , false,  true, false,  false,  false,     false, ['eina'], []],
+  ['ecore_drm'        , ['drm-deprecated']    , false,  true, false,  false,  false,     false, ['eina'], []],
+  ['exactness'        , []                    , false, false,  true,  false,  false,     false, ['eina, evas, eet'], []],
+  ]
 
 # We generate Efl_Config.h and config.h later, they will be available here
 config_dir += include_directories('.')
 
-#we have to do that first, eina modules are required by eina
-#the other modules require theire package
+# we have to do that first, eina modules are required by eina
+# the other modules require theire package
 subdir(join_paths(local_module, 'eina'))
 
-#List of dependency objects that might be disabled due to configurations
-#If they are enabled, the object gets overwritten by the library file.
+# List of dependency objects that might be disabled due to configurations
+# If they are enabled, the object gets overwritten by the library file.
 ecore_audio = declare_dependency()
 
 test_dirs = []
@@ -357,33 +362,33 @@ foreach package : subprojects
   package_name = package[0]
   package_version_name = '-'.join(package_name.split('_')) + '-' + version_major
   package_c_args = [
-    '-DPACKAGE_DATA_DIR="'+ join_paths(dir_data, package_name)+'"',
+    '-DPACKAGE_DATA_DIR="' + join_paths(dir_data, package_name) + '"',
     '-DNEED_RUN_IN_TREE=1',
-  ]
+    ]
   automatic_pkgfile = true
   if package[1].length() == 0 or get_option(package[1][0])
-    config_h.set('HAVE_'+package_name.to_upper().underscorify(), '1')
+    config_h.set('HAVE_' + package_name.to_upper().underscorify(), '1')
 
     dir_package_include = join_paths(dir_include, package_version_name)
     dir_package_modules = join_paths(dir_lib, package_name, 'modules')
 
-    #ensure that we really dont copy the eo file targets from a previous library
-    #Those are the variables that can be used to reflect the libraries speical handlings
+    # ensure that we really dont copy the eo file targets from a previous library
+    # Those are the variables that can be used to reflect the libraries speical handlings
     # -> at the end is used to indicate where to find this variable outside of this for loop
 
-    #public eo and eot files - which probebly have to be used later for bindings
+    # public eo and eot files - which probebly have to be used later for bindings
     pub_eo_files = []           # -> package_name + '_eo_files'
     pub_eo_types_files = []     # -> package_name + '_eot_files'
-    #All subdirs where eo files that are listed in the pub_* variables can be found
-    #For every element != '' a variable called package_name + '_' + subir + '_eot_files' and package_name + '_' + subir + '_eo_files' must exist.
+    # All subdirs where eo files that are listed in the pub_* variables can be found
+    # For every element != '' a variable called package_name + '_' + subir + '_eot_files' and package_name + '_' + subir + '_eo_files' must exist.
     package_eo_subdirs = ['']     # -> package_name + '_eo_subdirs'
-    #All subdirs that should be included in order to include every requried header
+    # All subdirs that should be included in order to include every requried header
     package_header_subdirs = [] # -> package_name + '_include_subdirs'
-    #eo file targets, this list of targets can be used to ensure the files are created before accessed
+    # eo file targets, this list of targets can be used to ensure the files are created before accessed
     pub_eo_file_target = []
-    #private eo files target - never use this :)
+    # private eo files target - never use this :)
     priv_eo_file_target = []
-    #use this variable to store custom variables in that should be placed in the .pc file
+    # use this variable to store custom variables in that should be placed in the .pc file
     package_pc_variables = []
 
     foreach static_lib : package[9]
@@ -400,28 +405,28 @@ foreach package : subprojects
       set_variable(package_name + '_eo_subdirs', package_eo_subdirs)
     endif
     if (package[2])
-       subdir(join_paths(local_module, package_name))
+      subdir(join_paths(local_module, package_name))
     endif
     if (package[4])
-       subdir(join_paths(local_bin, package_name))
+      subdir(join_paths(local_bin, package_name))
     endif
     if (package[5])
-       subdir(join_paths(local_benchmark, package_name))
+      subdir(join_paths(local_benchmark, package_name))
     endif
     if (package[6])
-       test_dirs += [package_name]
+      test_dirs += [package_name]
     endif
     if (package[7])
-       example_dirs += [package_name]
+      example_dirs += [package_name]
     endif
 
-    set_variable('build_'+package_name.underscorify(), true)
+    set_variable('build_' + package_name.underscorify(), true)
 
     # generate automatic pc files for libraries
-    if automatic_pkgfile == true and package[3]
-      tmp_lib = get_variable(package_name+'_lib')
-      tmp_deps = get_variable(package_name+'_deps')
-      tmp_pub_deps = get_variable(package_name+'_pub_deps')
+    if automatic_pkgfile and package[3]
+      tmp_lib = get_variable(package_name + '_lib')
+      tmp_deps = get_variable(package_name + '_deps')
+      tmp_pub_deps = get_variable(package_name + '_pub_deps')
       tmp_package_subdirs = []
 
       foreach subdir : package_header_subdirs
@@ -435,7 +440,7 @@ foreach package : subprojects
         libraries : tmp_pub_deps,
         requires : package[8],
         variables : package_pc_variables
-      )
+        )
       if package_name == 'ethumb_client'
         pkgconfig.generate(tmp_lib,
           name : package_name,
@@ -443,16 +448,16 @@ foreach package : subprojects
           version : version_major + '.' + version_minor + '.' + version_micro,
           libraries : tmp_pub_deps,
           requires : package[8],
-        )
+          )
       endif
     endif
   else
-    message(package_name+' disabled!')
+    message(package_name + ' disabled!')
   endif
 
 endforeach
 
-#build this later, as the debug services are depending on ecore
+# build this later, as the debug services are depending on ecore
 subdir(join_paths('src', 'bin', 'efl'))
 
 subdir(join_paths('src', 'generic', 'evas'))
@@ -465,13 +470,13 @@ if get_option('build-tests')
   check = dependency('check')
   subdir(join_paths('src', 'tests'))
   foreach test : test_dirs
-      subdir(join_paths(local_tests, test))
+    subdir(join_paths(local_tests, test))
   endforeach
 endif
 
 if get_option('build-examples')
   foreach example : example_dirs
-      subdir(join_paths(local_examples, example))
+    subdir(join_paths(local_examples, example))
   endforeach
 endif
 
@@ -502,44 +507,44 @@ efl_config_h.set('EFL_VERSION_MINOR', version_minor)
 efl_config_h.set('EFL_VERSION_MICRO', version_micro)
 efl_config_h.set('EFL_BUILD_ID', get_option('build-id'))
 
-#FIXME placeholder
-efl_config_h.set('EFL_API_LEGACY_DEF', '#define EFL_API_LEGACY_DEF "FIXME NOT IMPLEMENTED"')
+# FIXME placeholder
+efl_config_h.set('EFL_API_LEGACY_DEF', '# define EFL_API_LEGACY_DEF "FIXME NOT IMPLEMENTED"')
 
 configure_file(
   output: 'config.h',
   configuration: config_h
-)
+  )
 
 configure_file(
-  input: join_paths('src','lib', 'efl', 'Efl_Config.h.in'),
+  input: join_paths('src', 'lib', 'efl', 'Efl_Config.h.in'),
   output: 'Efl_Config.h',
-  install_dir : join_paths(dir_include,'efl-'+version_major),
+  install_dir : join_paths(dir_include, 'efl-' + version_major),
   configuration: efl_config_h
-)
+  )
 
 configure_file(
   input: 'elm_intro.h.in',
   output: 'elm_intro.h',
   configuration: config_h,
-  install_dir : join_paths(dir_include,'elementary-'+version_major)
-)
+  install_dir : join_paths(dir_include, 'elementary-' + version_major)
+  )
 
 subdir(join_paths('systemd-services'))
 subdir(join_paths('dbus-services'))
 
-#output the three new efl-* .pc files
+# output the three new efl-* .pc files
 efl_20_pc_files = [
   ['efl-ui', ['elementary']],
   ['efl-core', ['ecore', 'efl', 'emile']],
   ['efl-net', ['ecore', 'ecore-con', 'emile']],
-]
+  ]
 
 foreach pc_file : efl_20_pc_files
   name = pc_file[0]
   libraries = pc_file[1]
   pkgconfig.generate(
     name : '-'.join(name.split('_')),
-    description: name+' configutation file',
+    description: name + ' configutation file',
     requires : libraries,
-  )
+    )
 endforeach
