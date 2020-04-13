@@ -81,7 +81,6 @@ public_sub_headers = [
 'eina_inline_value.x',
 'eina_value_util.h',
 'eina_inline_value_util.x',
-'eina_inline_lock_barrier.x',
 'eina_inline_lock_posix.x',
 'eina_tmpstr.h',
 'eina_alloca.h',
@@ -330,7 +329,7 @@ if cc.has_header('byteswap.h')
 endif
 
 if cc.has_header_symbol('pthread.h', 'pthread_spin_init')
-   eina_config.set('EINA_HAVE_POSIX_SPINLOCK', '1')
+   eina_config.set('EINA_HAVE_PTHREAD_SPINLOCK', '1')
 endif
 
 if sys_osx == true
