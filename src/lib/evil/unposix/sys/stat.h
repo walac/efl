@@ -2,9 +2,18 @@
 #define UNPOSIX_SYS_STAT_H
 
 #include <evil_windows.h>
-#include <../ucrt/sys/types.h>
+#include <sys/types.h>
 #include_next <sys/stat.h>
 #include <corecrt.h>
+#include <evil_macro_wrapper.h>
+#include <errno.h>
+// loading as functions: chmod and umask (for umask, it is necessary to include: errno.h)
+//  fstat ja incluido em <sys/stat.h>
+#include <corecrt_io.h>
+
+#ifndef stat64
+# define stat64 _stat64
+#endif
 
 // Missing definitions:
 // Note: some pieces of code were based on LibreSSL-Portable's compat lib and
@@ -26,6 +35,25 @@
 
 #endif
 
-#include <corecrt.h>
-#include <sys/types.h>
-#include_next <sys/stat.h>
+
+
+
+
+
+
+/*
+
+// ------------------------------------------------------------------------
+
+// Sinalizadores de tipo de arquivo para d_type  // ver a questão de st_mode
+
+#define DT_UNKNOWN  0
+#define DT_REG      S_IFREG
+#define DT_DIR      S_IFDIR
+#define DT_FIFO     S_IFIFO
+#define DT_SOCK     S_IFSOCK  //ver 
+#define DT_CHR      S_IFCHR
+#define DT_BLK      S_IFBLK   //ver
+#define DT_LNK      S_IFLNK   //ver 
+
+*/
