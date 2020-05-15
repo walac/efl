@@ -22,9 +22,9 @@ typedef  int  mode_t ;
 # define stat64 _stat64
 #endif
 
-int fstatat (int fd, const char *restrict path, struct stat *restrict buf, int flag);
+int fstatat(int fd, const char *restrict path, struct stat *restrict buf, int flag);
 
-int fstatat64 (int fd, const char *restrict path, struct stat *restrict buf, int flag);
+int fstatat64(int fd, const char *restrict path, struct stat *restrict buf, int flag);
 
 // Missing definitions:
 // Note: some pieces of code were based on LibreSSL-Portable's compat lib and
