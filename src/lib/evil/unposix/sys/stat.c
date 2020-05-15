@@ -12,16 +12,16 @@
 
 
 int 
-fstatat (int dirfd, const char *pathname, struct stat *statbuf, int flags)
+fstatat(int dirfd, const char *pathname, struct stat *statbuf, int flags)
 {
    int r_fstatat;
 
    if (pathname[2] == '\\')
      {  
         if (flags == AT_SYMLINK_NOFOLLOW)
-           r_fstatat = stat(pathname, statbuf);
+          r_fstatat = stat(pathname, statbuf);
         else
-           r_fstatat = stat(pathname, statbuf);
+          r_fstatat = stat(pathname, statbuf);
         return r_fstatat;
      }
    else
@@ -70,16 +70,16 @@ fstatat (int dirfd, const char *pathname, struct stat *statbuf, int flags)
 }
 
 int 
-fstatat64 (int dirfd, const char *pathname, struct stat *statbuf, int flags)
+fstatat64(int dirfd, const char *pathname, struct stat *statbuf, int flags)
 {
    int r_fstatat;
 
    if (pathname[2] == '\\')
      {  
         if (flags == AT_SYMLINK_NOFOLLOW)
-           r_fstatat = stat64(pathname, statbuf);
+          r_fstatat = stat64(pathname, statbuf);
         else
-           r_fstatat = stat64(pathname, statbuf);
+          r_fstatat = stat64(pathname, statbuf);
         return r_fstatat;
      }
    else
