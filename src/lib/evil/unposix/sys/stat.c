@@ -1,7 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <Windows.h>
+#ifdef _WIN32
+# ifndef WIN_LEAN_AND_MEAN
+#  define WIN_LEAN_AND_MEAN
+# endif /* WIN_LEAN_AND_MEAN */
+# include <Windows.h>
+# undef WIN_LEAN_AND_MEAN
+#endif /* _WIN32 */
 # include <sys/types.h>
 # include <sys/stat.h>
 #include "stat.h"
