@@ -12,8 +12,6 @@
 # include <sys/stat.h>
 #include "stat.h"
 
-
-
 #define	AT_SYMLINK_NOFOLLOW	0x01
 
 
