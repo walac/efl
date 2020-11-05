@@ -52,6 +52,12 @@ typedef uintptr_t Eina_Thread;
 typedef void *(*Eina_Thread_Cb)(void *data, Eina_Thread t);
 
 /**
+ * @typedef Eina_Thread_Cleanup_Cb
+ * Type for the definition of a thread cleanup function
+ */
+typedef void (*Eina_Thread_Cleanup_Cb) (void *data);
+
+/**
  * @typedef Eina_Thread_Priority
  * Type to enumerate different thread priorities
  */
@@ -248,8 +254,16 @@ EAPI void eina_thread_cancel_checkpoint(void);
  *
  * @since 1.19
  */
+#ifdef _WIN32
+EAPI Eina_Bool
+eina_thread_cleanup_push(Eina_Thread_Cleanup_Cb fn, void *data);
+
+#define EINA_THREAD_CLEANUP_PUSH(cleanup, data) \
+  eina_thread_cleanup_push(cleanup, data)
+#else
 #define EINA_THREAD_CLEANUP_PUSH(cleanup, data) \
   pthread_cleanup_push(cleanup, data)
+#endif
 
 /**
  * @def EINA_THREAD_CLEANUP_POP(exec_cleanup)
@@ -278,8 +292,16 @@ EAPI void eina_thread_cancel_checkpoint(void);
  *
  * @since 1.19
  */
+#ifdef _WIN32
+EAPI void
+eina_thread_cleanup_pop(int execute);
+
+#define EINA_THREAD_CLEANUP_POP(exec_cleanup) \
+  eina_thread_cleanup_pop(exec_cleanup)
+#else
 #define EINA_THREAD_CLEANUP_POP(exec_cleanup) \
   pthread_cleanup_pop(exec_cleanup)
+#endif
 
 /**
  * @typedef Eina_Thread_Cancellable_Run_Cb

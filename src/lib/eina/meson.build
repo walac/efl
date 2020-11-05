@@ -200,9 +200,9 @@ eina_src = files([
 ]) + eina_mp_sources
 
 if sys_windows == true
-  eina_src += files('eina_file_win32.c')
+  eina_src += files('eina_file_win32.c', 'eina_win32_dllmain.c', 'eina_thread_win32.c')
 else
-  eina_src += files('eina_file.c')
+  eina_src += files('eina_file.c', 'eina_thread_posix.c')
 endif
 
 eina_config = configuration_data()
